@@ -68,7 +68,7 @@ public class Stage1App {
         DeepRagConfig config = DeepRagConfig.load(configPath);
         ConsoleLog.step("配置加载完成");
 
-        // 创建核心组件
+        // 创建核心组件（构造函数注入，不依赖Spring）
         EmbeddingService embeddingService = new EmbeddingService(config.getEmbedding());
         VectorStore vectorStore = new MilvusVectorStore(config.getVectorStore());
         ParserRouter parserRouter = new ParserRouter();
@@ -76,6 +76,7 @@ public class Stage1App {
                 config.getChunker().getMaxSize(),
                 config.getChunker().getOverlap()
         );
+        // 创建检索器和生成器
         DenseRetriever retriever = new DenseRetriever(
                 embeddingService,
                 vectorStore,
@@ -83,7 +84,7 @@ public class Stage1App {
         );
         SimpleGenerator generator = new SimpleGenerator(config.getLlm());
 
-        // 组装 RAG 管线
+        // 组装 RAG 管线(解析 -> 分块 -> Embedding -> 检索 -> 生成)
         RAGPipeline pipeline = new RAGPipeline(
                 parserRouter, chunker, embeddingService,
                 vectorStore, retriever, generator
@@ -216,6 +217,7 @@ public class Stage1App {
 
                     case "evaluate" -> {
                         ConsoleLog.info("开始运行评估集...");
+                        @SuppressWarnings("unused")
                         EvaluationReport report = evaluator.evaluate(
                                 "Stage1-DenseRetrieval",
                                 (collection, query) -> pipeline.query(collection, query)
