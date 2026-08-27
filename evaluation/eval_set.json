@@ -1,0 +1,74 @@
+[
+  {
+    "id": "eval_001",
+    "question": "DeepRAG Engine 的四个演进阶段分别是什么？",
+    "groundTruth": "DeepRAG Engine 分为四个演进阶段：Stage 1 是 Naive RAG，实现基础管线跑通完整流程；Stage 2 是全链路优化，引入多种分块策略、查询理解引擎、混合检索、Reranker、引用生成和幻觉检测；Stage 3 是高级策略，引入 Self-RAG、CRAG 和 Adaptive RAG 三种自适应策略；Stage 4 是生产工程，添加 REST API、语义缓存、性能监控和 Docker 部署。",
+    "sourceDoc": "deeprag-architecture.md",
+    "sourceChunk": "",
+    "type": "FACTUAL",
+    "collectionName": "deeprag_architecture"
+  },
+  {
+    "id": "eval_003",
+    "question": "如何选择合适的分块策略？",
+    "groundTruth": "选择分块策略需要根据场景：FixedSize 适合通用场景作为基线方案，参数建议 chunkSize 300-800 字、overlap 10%-20%；Recursive 适合结构化较好的技术文档；Semantic 适合长文本叙事性文档，需要额外 Embedding 调用；ParentChild 适合需要精准检索又要保证生成上下文的场景，parentSize 通常为 childSize 的 4-5 倍；Structure 适合有明确标题结构的文档如 API 文档。",
+    "sourceDoc": "rag-best-practices.md",
+    "sourceChunk": "",
+    "type": "PROCEDURAL",
+    "collectionName": "rag_best_practices"
+  },
+  {
+    "id": "eval_004",
+    "question": "Dense 检索和 Sparse 检索各有什么优缺点？",
+    "groundTruth": "Dense 检索（向量相似度）擅长语义理解，适合概念性抽象性查询，能找到语义相关但用词不同的内容；Sparse 检索（BM25 关键词匹配）擅长精确匹配，适合包含专有名词、产品名、错误码的查询。混合检索通过 RRF 融合两者优势，动态权重策略根据查询长度调整比例：短查询偏 Dense（0.7:0.3），长查询偏 Sparse（0.4:0.6），中等查询均等（0.5:0.5）。",
+    "sourceDoc": "rag-best-practices.md",
+    "sourceChunk": "",
+    "type": "COMPARISON",
+    "collectionName": "rag_best_practices"
+  },
+  {
+    "id": "eval_006",
+    "question": "Self-RAG 的工作流程是怎样的？",
+    "groundTruth": "Self-RAG 的工作流程：首先判断当前查询是否需要检索（有些问题可以直接由 LLM 回答）；如果需要检索，执行检索后评估结果的相关性；如果相关性不足，自动触发重试机制（最多 maxRetries 次），每次使用不同的查询改写策略；生成回答后，再次评估回答质量。Self-RAG 适合处理不可预测的开放式查询场景。",
+    "sourceDoc": "deeprag-architecture.md",
+    "sourceChunk": "",
+    "type": "PROCEDURAL",
+    "collectionName": "deeprag_architecture"
+  },
+  {
+    "id": "eval_007",
+    "question": "CRAG 的三种置信度路径分别如何处理？",
+    "groundTruth": "CRAG 根据检索结果的置信度分数路由到不同处理路径：高置信度（score >= highThreshold，默认 0.8）直接使用检索结果生成回答；中置信度介于高低阈值之间，对查询进行补充检索或改写后重新检索；低置信度（score < mediumThreshold，默认 0.4）放弃检索结果，转而使用 Web 搜索或直接让 LLM 回答。CRAG 适合知识库覆盖不全面的场景。",
+    "sourceDoc": "deeprag-architecture.md",
+    "sourceChunk": "",
+    "type": "FACTUAL",
+    "collectionName": "deeprag_architecture"
+  },
+  {
+    "id": "eval_008",
+    "question": "DeepRAG 使用的 Milvus 集合结构包含哪些字段？",
+    "groundTruth": "DeepRAG 的 Milvus 集合包含以下字段：chunk_id（VARCHAR(128)，主键，格式为 {collection}_{index}）、content（VARCHAR(8192)，原始文本内容）、embedding（FLOAT_VECTOR(768)，nomic-embed-text 向量）、source（VARCHAR(512)，来源文件路径）、chunk_index（INT64，块在文档中的顺序索引）、metadata（JSON，扩展元数据如标题和章节）。索引使用 AUTO 类型和 COSINE 相似度。",
+    "sourceDoc": "milvus-operations.md",
+    "sourceChunk": "",
+    "type": "FACTUAL",
+    "collectionName": "milvus_operations"
+  },
+  {
+    "id": "eval_011",
+    "question": "HyDE 的原理是什么？适合什么场景？",
+    "groundTruth": "HyDE（Hypothetical Document Embedding）的原理是：先让 LLM 对用户问题生成一个假设性答案（不一定正确），然后用这个答案的向量去检索文档。因为假设性答案在语义上更接近真实的文档内容，所以检索效果通常优于直接用问题向量。适合用户查询过于简短或模糊的场景。不适合的场景是当 LLM 对领域完全不了解时，假设性答案可能偏离正确方向。",
+    "sourceDoc": "rag-best-practices.md",
+    "sourceChunk": "",
+    "type": "FACTUAL",
+    "collectionName": "rag_best_practices"
+  },
+  {
+    "id": "eval_015",
+    "question": "查询重写和多查询扩展有什么区别？",
+    "groundTruth": "查询重写是将一个查询改写为一个更精确的检索词，例如把口语化的'那个分块的东西怎么选啊'改写为'RAG系统分块策略选择方法'。多查询扩展则是将一个查询扩展为多个不同角度的相关查询分别检索后合并去重，例如将'Milvus性能调优'扩展为'Milvus索引配置优化'、'向量数据库查询加速方法'、'Milvus资源分配建议'三个查询。两者的目标不同：重写是提高单个查询质量，扩展是增加检索覆盖面。",
+    "sourceDoc": "rag-best-practices.md",
+    "sourceChunk": "",
+    "type": "COMPARISON",
+    "collectionName": "rag_best_practices"
+  }
+]

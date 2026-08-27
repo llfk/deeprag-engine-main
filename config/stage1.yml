@@ -1,0 +1,43 @@
+# DeepRAG Engine - Stage 1 配置
+
+llm:
+  baseUrl: "http://localhost:11434/v1"
+  apiKey: "ollama"
+  model: "qwen2.5"
+  timeout: 60
+
+embedding:
+  baseUrl: "http://localhost:11434"
+  model: "nomic-embed-text"
+  # 维度
+  dimension: 768  
+  timeout: 30
+
+vectorStore:
+  host: "localhost"
+  # 端口
+  port: 19530
+  # 集合前缀, 用于区分不同的项目
+  collectionPrefix: "deeprag_"
+
+chunker:
+  # 分块策略
+  strategy: "fixed_size"
+  # 最大大小
+  maxSize: 500
+  # 重叠大小
+  overlap: 50
+
+retriever:
+  # 检索的 topK, 用于控制返回的文档数量
+  topK: 5
+  # 分数阈值, 用于过滤低质量的文档
+  scoreThreshold: 0.5
+
+evaluation:
+  datasetPath: "evaluation/eval_set.json"
+  reportPath: "evaluation/reports"
+
+api:
+  # API 端口
+  port: 8080
