@@ -4,7 +4,6 @@ import com.deeprag.log.ConsoleLog;
 import dev.langchain4j.model.chat.ChatLanguageModel;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**

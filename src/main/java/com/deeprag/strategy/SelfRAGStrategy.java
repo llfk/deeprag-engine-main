@@ -9,7 +9,7 @@ import com.deeprag.retriever.Retriever;
 import com.deeprag.store.SearchResult;
 import dev.langchain4j.model.chat.ChatLanguageModel;
 
-import java.util.ArrayList;
+
 import java.util.List;
 
 /**

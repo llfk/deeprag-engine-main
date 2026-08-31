@@ -5,7 +5,6 @@ import com.deeprag.api.RAGIndexer;
 import com.deeprag.chunker.*;
 import com.deeprag.config.DeepRagConfig;
 import com.deeprag.embedding.EmbeddingService;
-import com.deeprag.evaluator.EvaluationReport;
 import com.deeprag.evaluator.Evaluator;
 import com.deeprag.generator.*;
 import com.deeprag.log.ConsoleLog;
@@ -22,7 +21,6 @@ import com.deeprag.strategy.*;
 import dev.langchain4j.model.chat.ChatLanguageModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 
-import java.nio.file.Path;
 import java.time.Duration;
 import java.util.*;
 
@@ -286,7 +284,11 @@ public class Stage3App {
                         }
                     }
                     case "help" -> System.out.println(HELP_TEXT);
-                    case "quit", "exit" -> { ConsoleLog.info("再见！"); running = false; }
+                    case "quit", "exit" -> { 
+                        ConsoleLog.info("再见！"); 
+                        scanner.close();
+                        running = false; 
+                    }
                     default -> ConsoleLog.warn("未知命令，输入 help");
                 }
             } catch (Exception e) {

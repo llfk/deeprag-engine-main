@@ -20,6 +20,7 @@ public class DenseRetriever implements Retriever {
     private final int topK;
     private final float scoreThreshold;
 
+    // 构造函数重载：接受原始参数
     public DenseRetriever(EmbeddingService embeddingService,
                           VectorStore vectorStore,
                           int topK,
@@ -30,6 +31,7 @@ public class DenseRetriever implements Retriever {
         this.scoreThreshold = scoreThreshold;
     }
 
+    // 构造函数重载：接受配置对象
     public DenseRetriever(EmbeddingService embeddingService,
                           VectorStore vectorStore,
                           DeepRagConfig.RetrieverConfig config) {

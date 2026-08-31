@@ -91,6 +91,7 @@ public class MilvusVectorStore implements VectorStore {
                 .build());
 
         // 定义索引：AUTOINDEX + COSINE
+        // 索引方案交给 Milvus 自动处理，并使用余弦相似度衡量向量之间的相似程度
         List<IndexParam> indexParams = List.of(
                 IndexParam.builder()
                         .fieldName("embedding")

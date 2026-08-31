@@ -4,7 +4,7 @@ llm:
   baseUrl: "http://localhost:11434/v1"
   apiKey: "ollama"
   model: "qwen2.5"
-  timeout: 60
+  timeout: 120
 
 embedding:
   baseUrl: "http://localhost:11434"

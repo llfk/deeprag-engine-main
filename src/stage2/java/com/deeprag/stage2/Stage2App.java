@@ -356,6 +356,7 @@ public class Stage2App {
                     case "help" -> System.out.println(HELP_TEXT);
                     case "quit", "exit" -> {
                         ConsoleLog.info("再见！");
+                        scanner.close();
                         running = false;
                     }
                     default -> ConsoleLog.warn("未知命令: " + command + "，输入 help 查看帮助");

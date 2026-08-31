@@ -261,7 +261,11 @@ public class Stage4App {
                         }
                     }
                     case "help" -> System.out.println(HELP_TEXT);
-                    case "quit", "exit" -> { ConsoleLog.info("再见！"); running = false; }
+                    case "quit", "exit" -> { 
+                        ConsoleLog.info("再见！"); 
+                        scanner.close();
+                        running = false; 
+                    }
                     default -> ConsoleLog.warn("未知命令，输入 help");
                 }
             } catch (Exception e) {

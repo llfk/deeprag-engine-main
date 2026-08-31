@@ -4,7 +4,7 @@ llm:
   baseUrl: "http://localhost:11434/v1"
   apiKey: "ollama"
   model: "qwen2.5"
-  timeout: 60
+  timeout: 120
 
 embedding:
   baseUrl: "http://localhost:11434"
@@ -17,6 +17,7 @@ vectorStore:
   port: 19530
   collectionPrefix: "deeprag_"
 
+# 分词策略
 chunker:
   strategy: "parent_child"
   maxSize: 500
@@ -24,23 +25,26 @@ chunker:
   childSize: 128
   childOverlap: 30
 
+# 混合检索
 retriever:
-  strategy: "hybrid"
+  strategy: "hybrid"   # 用混合检索
   topK: 20
-  finalTopK: 5
-  scoreThreshold: 0.3
-  denseWeight: 0.5
-  sparseWeight: 0.5
-  dynamicWeight: true
-  rrfK: 60
+  finalTopK: 5         # 只留前5条喂给生成器
+  scoreThreshold: 0.3  # 稠密检索的相似度下限，低于此分的候选直接过滤掉
+  denseWeight: 0.5     # 稠密路径的权重
+  sparseWeight: 0.5    # 稀疏路径的权重
+  dynamicWeight: true  # 按问题长度动态调权重
+  rrfK: 60             # RRF 公式里的 K 常数，越大融合结果越"平滑
 
+# query理解
 queryEngine:
   enabled: true
-  enableRewrite: true
-  enableHyDE: true
-  enableMultiQuery: true
-  enableDecomposition: true
+  enableRewrite: true     # 问题改写
+  enableHyDE: false        # 对FACTUAL/PROCEDURAL类问题：先让 LLM 生成一个"假设性答案"
+  enableMultiQuery: true  # 一个问题扩成多个角度的问题
+  enableDecomposition: true  # 对比类问题：拆成子问题分别处理
 
+# 重排
 reranker:
   enabled: true
   strategy: "llm"
@@ -48,11 +52,12 @@ reranker:
   model: "qwen2.5"
   timeout: 60
 
+# 生成优化
 generator:
-  enableCitation: true
-  enableHallucinationDetection: true
-  contextCompressionThreshold: 0.3
-  maxContextTokens: 3000
+  enableCitation: true                   # 回答带 [1][2] 引用标注
+  enableHallucinationDetection: true    # 幻觉检测
+  contextCompressionThreshold: 0.3       # 生成前把重排后分数低于 0.3 的结果过滤掉
+  maxContextTokens: 3000                 # 控制喂给生成器的上下文长度上限
 
 evaluation:
   datasetPath: "evaluation/eval_set.json"
