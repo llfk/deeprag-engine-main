@@ -3,8 +3,15 @@
 llm:
   baseUrl: "http://localhost:11434/v1"
   apiKey: "ollama"
-  model: "qwen2.5"
-  timeout: 120
+  model: "gpt-oss:20b:cloud"
+  timeout: 240
+
+# Judge 打分模型：独立强模型，与生成器分开，避免"自己评自己"偏松
+judge:
+  baseUrl: "http://localhost:11434/v1"
+  apiKey: "ollama"
+  model: "gpt-oss:120b:cloud"
+  timeout: 240
 
 embedding:
   baseUrl: "http://localhost:11434"
@@ -40,7 +47,7 @@ retriever:
 queryEngine:
   enabled: true
   enableRewrite: true     # 问题改写
-  enableHyDE: false        # 对FACTUAL/PROCEDURAL类问题：先让 LLM 生成一个"假设性答案"
+  enableHyDE: true        # 对FACTUAL/PROCEDURAL类问题：先让 LLM 生成一个"假设性答案"
   enableMultiQuery: true  # 一个问题扩成多个角度的问题
   enableDecomposition: true  # 对比类问题：拆成子问题分别处理
 
@@ -49,8 +56,8 @@ reranker:
   enabled: true
   strategy: "llm"
   baseUrl: "http://localhost:11434"
-  model: "qwen2.5"
-  timeout: 60
+  model: "gpt-oss:20b:cloud"
+  timeout: 240
 
 # 生成优化
 generator:

@@ -90,12 +90,13 @@ public class Stage1App {
                 vectorStore, retriever, generator
         );
 
-        // 创建用于评测的 Judge 模型（复用 LLM 配置）
+        // 创建用于评测的 Judge 模型（独立配置，与生成器分开）
+        var judgeCfg = config.getJudge() != null ? config.getJudge() : config.getLlm();
         ChatLanguageModel judgeModel = OpenAiChatModel.builder()
-                .baseUrl(config.getLlm().getBaseUrl())
-                .apiKey(config.getLlm().getApiKey())
-                .modelName(config.getLlm().getModel())
-                .timeout(Duration.ofSeconds(config.getLlm().getTimeout()))
+                .baseUrl(judgeCfg.getBaseUrl())
+                .apiKey(judgeCfg.getApiKey())
+                .modelName(judgeCfg.getModel())
+                .timeout(Duration.ofSeconds(judgeCfg.getTimeout()))
                 .build();
         Evaluator evaluator = new Evaluator(judgeModel, config.getEvaluation().getDatasetPath());
 

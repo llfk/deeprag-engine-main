@@ -3,8 +3,15 @@
 llm:
   baseUrl: "http://localhost:11434/v1"
   apiKey: "ollama"
-  model: "qwen2.5"
-  timeout: 60
+  model: "gpt-oss:20b:cloud"
+  timeout: 240
+
+# Judge 打分模型：独立强模型，与生成器分开，避免"自己评自己"偏松
+judge:
+  baseUrl: "http://localhost:11434/v1"
+  apiKey: "ollama"
+  model: "gpt-oss:120b:cloud"
+  timeout: 240
 
 embedding:
   baseUrl: "http://localhost:11434"

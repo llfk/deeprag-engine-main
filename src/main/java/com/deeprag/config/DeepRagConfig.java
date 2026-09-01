@@ -24,6 +24,7 @@ import java.io.InputStream;
 public class DeepRagConfig {
     // ===== Stage 1 核心配置 =====
     private LlmConfig llm;
+    private LlmConfig judge;
     private EmbeddingConfig embedding;
     private VectorStoreConfig vectorStore;
     private ChunkerConfig chunker;
@@ -181,6 +182,7 @@ public class DeepRagConfig {
             DeepRagConfig config = yaml.load(is);
             // 填充默认值
             if (config.getLlm() == null) config.setLlm(new LlmConfig());
+            if (config.getJudge() == null) config.setJudge(config.getLlm());
             if (config.getEmbedding() == null) config.setEmbedding(new EmbeddingConfig());
             if (config.getVectorStore() == null) config.setVectorStore(new VectorStoreConfig());
             if (config.getChunker() == null) config.setChunker(new ChunkerConfig());

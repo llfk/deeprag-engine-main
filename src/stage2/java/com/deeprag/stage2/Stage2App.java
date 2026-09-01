@@ -144,8 +144,15 @@ public class Stage2App {
                 new DenseRetriever(embeddingService, vectorStore, config.getRetriever()),
                 generator);
 
-        // Evaluator
-        Evaluator evaluator = new Evaluator(chatModel, config.getEvaluation().getDatasetPath());
+        // Evaluator：用独立的 Judge 模型（与生成器分开，避免自己评自己）
+        var judgeCfg = config.getJudge() != null ? config.getJudge() : config.getLlm();
+        ChatLanguageModel judgeModel = OpenAiChatModel.builder()
+                .baseUrl(judgeCfg.getBaseUrl())
+                .apiKey(judgeCfg.getApiKey())
+                .modelName(judgeCfg.getModel())
+                .timeout(Duration.ofSeconds(judgeCfg.getTimeout()))
+                .build();
+        Evaluator evaluator = new Evaluator(judgeModel, config.getEvaluation().getDatasetPath());
 
         // 当前策略
         RAGStrategy currentStrategy = advancedStrategy;
