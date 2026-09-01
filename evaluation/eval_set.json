@@ -6,7 +6,8 @@
     "sourceDoc": "deeprag-architecture.md",
     "sourceChunk": "",
     "type": "FACTUAL",
-    "collectionName": "deeprag_architecture"
+    "collectionName": "deeprag_architecture",
+    "keyPhrases": ["Stage 1", "Naive RAG", "Stage 2", "Self-RAG", "CRAG", "Adaptive RAG", "Stage 4", "REST API", "语义缓存", "Docker"]
   },
   {
     "id": "eval_003",
@@ -15,7 +16,8 @@
     "sourceDoc": "rag-best-practices.md",
     "sourceChunk": "",
     "type": "PROCEDURAL",
-    "collectionName": "rag_best_practices"
+    "collectionName": "rag_best_practices",
+    "keyPhrases": ["FixedSize", "Recursive", "Semantic", "ParentChild", "Structure", "chunkSize", "overlap"]
   },
   {
     "id": "eval_004",
@@ -24,7 +26,8 @@
     "sourceDoc": "rag-best-practices.md",
     "sourceChunk": "",
     "type": "COMPARISON",
-    "collectionName": "rag_best_practices"
+    "collectionName": "rag_best_practices",
+    "keyPhrases": ["Dense", "Sparse", "BM25", "RRF", "0.7", "0.3", "0.4", "0.6"]
   },
   {
     "id": "eval_006",
@@ -33,7 +36,8 @@
     "sourceDoc": "deeprag-architecture.md",
     "sourceChunk": "",
     "type": "PROCEDURAL",
-    "collectionName": "deeprag_architecture"
+    "collectionName": "deeprag_architecture",
+    "keyPhrases": ["Self-RAG", "maxRetries", "改写", "相关性"]
   },
   {
     "id": "eval_007",
@@ -42,7 +46,8 @@
     "sourceDoc": "deeprag-architecture.md",
     "sourceChunk": "",
     "type": "FACTUAL",
-    "collectionName": "deeprag_architecture"
+    "collectionName": "deeprag_architecture",
+    "keyPhrases": ["CRAG", "highThreshold", "mediumThreshold", "Web 搜索", "0.8", "0.4"]
   },
   {
     "id": "eval_008",
@@ -51,7 +56,8 @@
     "sourceDoc": "milvus-operations.md",
     "sourceChunk": "",
     "type": "FACTUAL",
-    "collectionName": "milvus_operations"
+    "collectionName": "milvus_operations",
+    "keyPhrases": ["chunk_id", "content", "embedding", "source", "chunk_index", "metadata", "FLOAT_VECTOR", "COSINE"]
   },
   {
     "id": "eval_011",
@@ -60,7 +66,8 @@
     "sourceDoc": "rag-best-practices.md",
     "sourceChunk": "",
     "type": "FACTUAL",
-    "collectionName": "rag_best_practices"
+    "collectionName": "rag_best_practices",
+    "keyPhrases": ["HyDE", "假设性答案", "Hypothetical Document Embedding"]
   },
   {
     "id": "eval_015",
@@ -69,6 +76,137 @@
     "sourceDoc": "rag-best-practices.md",
     "sourceChunk": "",
     "type": "COMPARISON",
-    "collectionName": "rag_best_practices"
+    "collectionName": "rag_best_practices",
+    "keyPhrases": ["查询重写", "多查询扩展", "Milvus性能调优", "RAG系统分块策略选择方法"]
+  },
+  {
+    "id": "eval_016",
+    "question": "Reranker 为什么建议只对 topK=20 的候选做重排，而不是对全部检索结果重排？重排后保留多少条送入生成器？",
+    "groundTruth": "Reranker 属于 Cross-Encoder 架构，每次只处理一对（query, document），计算量大，不适合对大规模候选做重排，否则延迟会很高；因此只对 topK（如 20 条）候选做 Rerank。实践建议是：先检索 topK=20，Rerank 后取 finalTopK=5 送入生成器。",
+    "sourceDoc": "rag-best-practices.md",
+    "sourceChunk": "",
+    "type": "PROCEDURAL",
+    "collectionName": "rag_best_practices",
+    "keyPhrases": ["topK", "finalTopK", "Cross-Encoder", "20", "5"]
+  },
+  {
+    "id": "eval_017",
+    "question": "DeepRAG 推荐的相似度阈值 scoreThreshold 起始值是多少？精确问答场景建议设为多少？",
+    "groundTruth": "scoreThreshold 用于过滤低于阈值的检索结果，推荐起始值为 0.3-0.5（宽松，确保召回率），然后再通过评估 HitRate 和 Faithfulness 逐步调高。对于精确问答场景，可设为 0.6-0.7。",
+    "sourceDoc": "milvus-operations.md",
+    "sourceChunk": "",
+    "type": "FACTUAL",
+    "collectionName": "milvus_operations",
+    "keyPhrases": ["scoreThreshold", "0.3", "0.5", "0.6", "0.7"]
+  },
+  {
+    "id": "eval_018",
+    "question": "Adaptive RAG 根据查询复杂度会走哪些不同的处理路径？",
+    "groundTruth": "Adaptive RAG 首先评估查询复杂度，再选择匹配路径：简单查询（SIMPLE）直接由 LLM 回答，跳过检索流程，如'你好'、'什么是RAG'；中等查询（MEDIUM）执行单次检索+重排+生成，如'DeepRAG支持哪些分块策略'；复杂查询（COMPLEX）并行执行多个子查询并结合 Self-RAG 迭代优化，如'对比 Dense 检索和混合检索的优劣，给出适用场景建议'。",
+    "sourceDoc": "deeprag-architecture.md",
+    "sourceChunk": "",
+    "type": "PROCEDURAL",
+    "collectionName": "deeprag_architecture",
+    "keyPhrases": ["SIMPLE", "MEDIUM", "COMPLEX", "Adaptive RAG"]
+  },
+  {
+    "id": "eval_019",
+    "question": "Milvus 支持的索引类型里，哪个查询速度最快但内存占用较高？哪个适合超大规模场景但精度有损失？哪个在中规模下精度与速度均衡？",
+    "groundTruth": "HNSW 查询速度最快，但内存占用较高；IVF_PQ 适合超大规模场景，内存占用最低，但精度有损失；IVF_FLAT 适合中等规模（100 万以内），精度与速度均衡；AUTO 表示由 Milvus 自动选择最优索引。",
+    "sourceDoc": "milvus-operations.md",
+    "sourceChunk": "",
+    "type": "COMPARISON",
+    "collectionName": "milvus_operations",
+    "keyPhrases": ["HNSW", "IVF_PQ", "IVF_FLAT", "AUTO"]
+  },
+  {
+    "id": "eval_020",
+    "question": "检索不到相关内容时，可以从哪些方面排查？Embedding 模型不一致会引发什么后果？",
+    "groundTruth": "检索不到相关内容可以从以下方面排查：1. 分块过大，尝试减小 chunkSize 让每个块更聚焦；2. Embedding 模型不匹配，必须确保索引和查询使用同一个模型；3. 阈值设置过高，先降低 scoreThreshold 确保能召回，再逐步调高；4. 查询表述问题，启用查询重写或 HyDE。若索引和查询使用的 Embedding 模型不一致，会导致检索不到相关内容，因此必须确保两者使用同一个模型。",
+    "sourceDoc": "rag-best-practices.md",
+    "sourceChunk": "",
+    "type": "PROCEDURAL",
+    "collectionName": "rag_best_practices",
+    "keyPhrases": ["chunkSize", "scoreThreshold", "查询重写", "HyDE"]
+  },
+  {
+    "id": "eval_024",
+    "question": "语义分块的 semanticThreshold 默认建议值是多少？低于该值的相邻句子会怎样？",
+    "groundTruth": "Semantic 分块先按句子切分，再计算相邻句子的 Embedding 相似度，在相似度低于阈值处断开。semanticThreshold 通常设为 0.5；低于此值的相邻句子会被分到不同块。该策略需要额外的 Embedding 调用，索引速度较慢，块大小差异较大。",
+    "sourceDoc": "rag-best-practices.md",
+    "sourceChunk": "",
+    "type": "PROCEDURAL",
+    "collectionName": "rag_best_practices",
+    "keyPhrases": ["semanticThreshold", "0.5", "Semantic"]
+  },
+  {
+    "id": "eval_025",
+    "question": "DeepRAG 自动生成的 Milvus 集合名遵循什么规则？'DeepRAG架构.pdf' 会生成什么集合名？",
+    "groundTruth": "集合名从源文件名自动生成：取文件名（不含路径和扩展名），将非字母数字字符替换为下划线，并转小写。例如 config-guide.md → config_guide；DeepRAG架构.pdf → deeprag___。",
+    "sourceDoc": "deeprag-architecture.md",
+    "sourceChunk": "",
+    "type": "FACTUAL",
+    "collectionName": "deeprag_architecture",
+    "keyPhrases": ["config_guide", "deeprag___", "下划线", "小写"]
+  },
+  {
+    "id": "eval_026",
+    "question": "混合检索的动态权重为什么偏短查询 Dense、偏长查询 Sparse？",
+    "groundTruth": "动态权重策略根据查询长度自动调整 Dense/Sparse 比例：短查询（<10 字）信息量少，需要更强的语义理解，所以偏 Dense（如 0.7:0.3）；长查询（>30 字）包含更多关键词，BM25 能更精准地匹配，所以偏 Sparse（如 0.4:0.6）；中等查询则均等（0.5:0.5）。",
+    "sourceDoc": "rag-best-practices.md",
+    "sourceChunk": "",
+    "type": "PROCEDURAL",
+    "collectionName": "rag_best_practices",
+    "keyPhrases": ["动态权重", "Dense", "Sparse", "0.7", "0.3", "0.4", "0.6", "0.5"]
+  },
+  {
+    "id": "eval_027",
+    "question": "RAG 回答出现幻觉时，可以采取哪些缓解措施？",
+    "groundTruth": "可从以下方面缓解幻觉：1. 检索内容不足时增加 topK，让更多上下文送入 LLM；2. 提示词不够严格时，在 system prompt 中强调只能基于给定上下文回答、不确定时说明；3. LLM 本身问题时降低 temperature（如 0.3）减少随机性；4. 启用幻觉检测，让系统自动评估并标注幻觉风险。",
+    "sourceDoc": "rag-best-practices.md",
+    "sourceChunk": "",
+    "type": "PROCEDURAL",
+    "collectionName": "rag_best_practices",
+    "keyPhrases": ["temperature", "0.3", "幻觉检测", "topK"]
+  },
+  {
+    "id": "eval_031",
+    "question": "请结合 Milvus 集合结构、向量化模型和索引类型，说明 DeepRAG 一件文本块从入库到被检索出来的完整数据链路。",
+    "groundTruth": "一条文本块的完整链路是：先由 nomic-embed-text 将文本块转换为 768 维 Dense 向量；再存入 Milvus 集合，每条记录含 chunk_id（VARCHAR(128) 主键）、content（VARCHAR(8192)）、embedding（FLOAT_VECTOR(768)）、source、chunk_index（INT64）、metadata（JSON）字段；集合使用 AUTO 索引类型和 COSINE 相似度；查询时用户问题被转成向量，在 collection 中按向量相似度检索，经过 topK + scoreThreshold 双重过滤，返回最相似的文本块。",
+    "sourceDoc": "deeprag-architecture.md",
+    "sourceChunk": "",
+    "type": "COMPARISON",
+    "collectionName": "deeprag_architecture",
+    "keyPhrases": ["nomic-embed-text", "chunk_id", "FLOAT_VECTOR", "COSINE", "metadata", "AUTO"]
+  },
+  {
+    "id": "eval_032",
+    "question": "RAG 回答出现幻觉时，文档建议按哪几个方向排查？如果同时检索不到相关内容，两者可共享的排查手段是什么？",
+    "groundTruth": "缓解幻觉的方向有：增加 topK 让更多上下文送入 LLM；在 system prompt 中强调只能基于上下文回答、不确定时说明；降低 temperature（如 0.3）减少随机性；启用幻觉检测。而检索不到内容时的排查方向是：减小 chunkSize 让块更聚焦、确保索引和查询使用同一 Embedding 模型、降低 scoreThreshold、启用查询重写或 HyDE。两者共享的排查手段是调整 topK、scoreThreshold 和查询表述（查询重写/HyDE），也就是说通过优化检索质量既能提升召回也能减少幻觉。",
+    "sourceDoc": "rag-best-practices.md",
+    "sourceChunk": "",
+    "type": "COMPARISON",
+    "collectionName": "rag_best_practices",
+    "keyPhrases": ["topK", "scoreThreshold", "temperature", "查询重写", "HyDE", "chunkSize"]
+  },
+  {
+    "id": "eval_033",
+    "question": "Milvus 运维手册里，IVF_FLAT 索引建议的集合规模上限是多少万条？",
+    "groundTruth": "文档中 IVF_FLAT 索引的适用场景是中等规模（100 万以内），精度与速度均衡。对于超过该规模的超大场景，建议改用 IVF_PQ，因为它内存占用最低但精度有损失。",
+    "sourceDoc": "milvus-operations.md",
+    "sourceChunk": "",
+    "type": "FACTUAL",
+    "collectionName": "milvus_operations",
+    "keyPhrases": ["IVF_FLAT", "中等规模", "IVF_PQ", "精度", "内存占用"]
+  },
+  {
+    "id": "eval_034",
+    "question": "在 0.3 的 temperature 配置下，RAG 系统的幻觉率预计能降低几个百分点？",
+    "groundTruth": "文档中只提到降低 temperature（如 0.3）可以减少随机性、降低幻觉风险，但并未给出任何具体的百分比量化结论。因此这个问题无法从知识库中得出确切数字，只能回答'文档未提供具体的降幅百分比'，不应编造某个百分点。",
+    "sourceDoc": "rag-best-practices.md",
+    "sourceChunk": "",
+    "type": "FACTUAL",
+    "collectionName": "rag_best_practices",
+    "keyPhrases": ["temperature", "降低随机性", "幻觉风险"]
   }
 ]
