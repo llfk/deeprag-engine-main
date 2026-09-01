@@ -2,6 +2,8 @@ package com.deeprag.evaluator;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * 评测数据条目，对应评估集中的单个测试项
  */
@@ -21,4 +23,6 @@ public class EvalItem {
     private String type;
     /** 所属集合名称 */
     private String collectionName;
+    /** 命中所依据的答案核心短语（为空时按 groundTruth 兜底提取） */
+    private List<String> keyPhrases;
 }
