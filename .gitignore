@@ -2,6 +2,9 @@
 target/
 dependency-reduced-pom.xml
 
+# Claude local project notes (not for sharing)
+CLAUDE.md
+
 # IDE
 .idea/
 *.iml

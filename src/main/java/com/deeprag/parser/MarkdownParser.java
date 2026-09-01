@@ -23,6 +23,7 @@ public class MarkdownParser {
      */
     public ParseResult parse(String filePath) {
         try {
+            // 读取整个文件内容为字符串
             String content = Files.readString(Path.of(filePath));
 
             // 提取所有一级标题作为章节列表

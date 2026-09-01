@@ -43,18 +43,22 @@ public class FixedSizeChunker implements Chunker {
         int index = 0;
 
         while (start < text.length()) {
+            // 计算当前块的结束位置，确保不超过文本长度
             int end = Math.min(start + maxSize, text.length());
 
             // 句子边界感知：在 [start, end] 范围内寻找最近的句号或换行符，避免在句子中间切断
             if (end < text.length()) {
+                // 尝试在 end 之前寻找句号或换行符
                 int lastPeriod = text.lastIndexOf('。', end);
                 int lastNewline = text.lastIndexOf('\n', end);
                 int splitPoint = Math.max(lastPeriod, lastNewline);
                 if (splitPoint > start) {
+                    // 找到合适的切分点，更新 end
                     end = splitPoint + 1;
                 }
             }
 
+            // 提取当前块的文本内容，并去除首尾空白
             String chunkText = text.substring(start, end).trim();
             if (!chunkText.isEmpty()) {
                 String id = generateId(parseResult.getMetadata().getSource(), index);

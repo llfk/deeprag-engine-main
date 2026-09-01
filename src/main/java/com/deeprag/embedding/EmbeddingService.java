@@ -50,11 +50,13 @@ public class EmbeddingService {
      */
     public List<float[]> embedBatch(List<String> texts) {
         try {
+            // 构建json请求体
             String body = mapper.writeValueAsString(Map.of(
                     "model", model,
                     "input", texts
             ));
 
+            // 构建HTTP请求
             Request request = new Request.Builder()
                     .url(baseUrl + "/api/embed")
                     .post(RequestBody.create(body, MediaType.parse("application/json")))
@@ -66,6 +68,7 @@ public class EmbeddingService {
                 }
 
                 String respBody = response.body().string();
+                // 将 JSON 字符串解析为树形结构
                 JsonNode root = mapper.readTree(respBody);
                 JsonNode embeddings = root.get("embeddings");
 

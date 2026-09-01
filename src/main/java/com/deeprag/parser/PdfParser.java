@@ -24,7 +24,9 @@ public class PdfParser {
      * @return 解析结果，包含全文内容（无章节结构信息）
      */
     public ParseResult parse(String filePath) {
+        // 使用 PDFBox 的Loader.loadPDF()加载 PDF 文件并提取文本
         try (PDDocument doc = Loader.loadPDF(new File(filePath))) {
+            // 使用PDFBox 提供的 PDFTextStripper 提取文本
             PDFTextStripper stripper = new PDFTextStripper();
             StringBuilder text = new StringBuilder();
 

@@ -23,7 +23,7 @@ import io.milvus.v2.service.vector.response.SearchResp;
 import java.util.*;
 
 /**
- * 基于 Milvus 的向量存储实现
+ * 基于 Milvus 的向量存储实现,同时支持dense+sparse
  * <p>
  * 集合 Schema：
  * - chunk_id  (VarChar, 主键, 最大128)
@@ -66,6 +66,19 @@ public class MilvusVectorStore implements VectorStore {
             ConsoleLog.warn("检查集合存在性失败，将尝试创建: " + e.getMessage());
         }
 
+        /*
+        Collection: deeprag_{knowledgeBaseName}
+        ________________________________________________________
+        |字段名     |      类型     |       说明                 |
+        |__________|_______________|____________________________|
+        |chunk_id  |  VarChar(PK)  |  Chunk唯一标识             |
+        |content   |  VarChar      |   Chunk文本内容(max 65535) |
+        |embedding |  FloatVector  |   768维向量                |          
+        |metadata  |  JSON         |   来源、章节等元数据        |
+        |__________| ______________|____________________________|
+        索引:
+            embedding -> AUTOINDEX,COSINE
+        */
         // 定义集合 Schema
         CreateCollectionReq.CollectionSchema schema = client.createSchema();
         schema.addField(AddFieldReq.builder()
