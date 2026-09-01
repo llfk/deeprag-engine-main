@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  DeepRAG Engine 日志配置
+
+  背景：项目没有自带 logback 配置，logback 回退到默认 BasicConfigurator，
+  root 默认级别为 DEBUG，导致 Milvus SDK 底层网络框架（grpc-java-netty）
+  打印大量 DEBUG 日志刷屏。
+
+  说明：
+  - 本项目自定义的 ConsoleLog 走 System.out 直接打印，不经过 slf4j/logback，
+    因此这里的级别调整不会影响任何 ConsoleLog 步骤日志。
+  - 这里只控制第三方库（slf4j/logback）日志：把 root 压到 INFO，
+    并针对性把 grpc / netty / milvus 压到 WARN，砍掉刷屏的 DEBUG。
+-->
+<configuration>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- Milvus SDK 底层网络框架：这类 DEBUG 是噪音，压到 WARN -->
+    <logger name="io.grpc" level="WARN"/>
+    <logger name="io.netty" level="WARN"/>
+    <logger name="io.milvus" level="WARN"/>
+
+    <!-- 根日志级别：INFO，过滤掉其余第三方库的 DEBUG -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+</configuration>
