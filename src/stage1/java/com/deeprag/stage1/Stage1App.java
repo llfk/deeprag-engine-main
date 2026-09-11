@@ -190,10 +190,13 @@ public class Stage1App {
                                 try {
                                     String shortName = col.startsWith(prefix) ? col.substring(prefix.length()) : col;
                                     ConsoleLog.dim("搜索集合: " + shortName);
+                                    // 每个集合先跑完整RAG，答案已生成
                                     var r = pipeline.query(shortName, queryText);
+                                    // 取这个集合5个chunk的分数
                                     double avg = r.getRetrievedChunks() != null && !r.getRetrievedChunks().isEmpty()
                                             ? r.getRetrievedChunks().stream().mapToDouble(s -> s.getScore()).average().orElse(0)
                                             : 0;
+                                    // 比较的是平均检索分，只保留分数最高的那次        
                                     if (avg > bestScore) {
                                         bestScore = avg;
                                         result = r;

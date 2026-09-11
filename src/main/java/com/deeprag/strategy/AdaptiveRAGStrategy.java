@@ -97,12 +97,14 @@ public class AdaptiveRAGStrategy implements RAGStrategy {
                 if (processed.getHydeAnswer() != null) {
                     retrievalQuery = processed.getHydeAnswer();
                 } else if (processed.getRewritten() != null) {
+                    // 如果没有 HyDE，使用改写后的查询
                     retrievalQuery = processed.getRewritten();
                 }
             } catch (Exception e) {
                 ConsoleLog.warn("Query 理解失败: " + e.getMessage());
             }
         }
+        // 用混合检索器检索
         var retrievalResult = hybridRetriever.retrieve(retrievalQuery, collection);
         return generator.generate(query, retrievalResult);
     }
@@ -228,13 +230,33 @@ public class AdaptiveRAGStrategy implements RAGStrategy {
     private Complexity assessComplexity(String query) {
         try {
             String prompt = """
-                    请评估以下问题的复杂度：
-                    - SIMPLE: 简单事实查询，一个关键词即可检索
-                    - MEDIUM: 需要理解或多步推理
-                    - COMPLEX: 多跳推理、对比、综合分析
+                    请根据以下标准评估用户问题的复杂度：
 
+                    === 判断标准 ===
+                    1. SIMPLE（简单事实查询）:
+                    - 问题可以仅凭一个关键词或短语检索得到答案
+                    - 答案是一个明确的事实（人名、时间、地点、数值）
+                    - 示例："中国首都是哪里？" → SIMPLE
+                    - 示例："3+5等于多少？" → SIMPLE
+
+                    2. MEDIUM（中等复杂度）:
+                    - 需要检索多个相关信息来回答
+                    - 包含"为什么""怎么做"等需要解释的问题
+                    - 需要对比2个东西的差异
+                    - 示例："如何配置Nginx？" → MEDIUM
+                    - 示例："Python和Java的区别" → MEDIUM
+
+                    3. COMPLEX（高复杂度）:
+                    - 需要多步推理或逻辑链
+                    - 包含多个子问题
+                    - 需要综合分析多个来源的信息
+                    - 示例："A公司收购B公司对C行业的影响" → COMPLEX
+                    - 示例："如何选择适合的数据库" → COMPLEX
+
+                    === 待评估问题 ===
                     问题：%s
-                    只输出级别名称。
+
+                    只输出级别名称（SIMPLE/MEDIUM/COMPLEX），不要输出其他内容。
                     """.formatted(query);
             String response = llm.generate(prompt).trim().toUpperCase();
             if (response.contains("COMPLEX")) return Complexity.COMPLEX;

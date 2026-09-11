@@ -63,6 +63,7 @@ public class Evaluator {
             {"faithfulness":整数,"relevancy":整数}
             """;
 
+    // 正则匹配 Judge 输出的 JSON 评分
     private static final Pattern JSON_SCORE_PATTERN = Pattern.compile(
             "\\{\\s*\"faithfulness\"\\s*:\\s*(\\d+(?:\\.\\d+)?)\\s*,\\s*\"relevancy\"\\s*:\\s*(\\d+(?:\\.\\d+)?)\\s*\\}"
     );
@@ -115,6 +116,9 @@ public class Evaluator {
 
             try {
                 // 调用管线
+                // 执行 RAG 查询：将评估数据中的问题输入管线，获取完整生成结果
+                // pipelineFn 是外部注入的 BiFunction，支持不同的管线实现/策略
+                // 返回结果将用于后续的程序化命中判定和 LLM-as-Judge 质量评估
                 GenerationResult result = pipelineFn.apply(item.getCollectionName(), item.getQuestion());
 
                 // 程序化检测命中率和排名：内容级判定（答案关键短语是否被检索到）

@@ -75,7 +75,7 @@ public class RAGPipeline {
         List<float[]> embeddings = embeddingService.embedBatch(texts);
         ConsoleLog.step("向量化完成 (维度=" + embeddings.get(0).length + ")");
 
-        // 第四步：组装 ChunkEmbedding 并写入 Milvus
+        // 第四步：组装 ChunkEmbedding 
         List<ChunkEmbedding> chunkEmbeddings = new ArrayList<>();
         for (int i = 0; i < chunks.size(); i++) {
             Chunk chunk = chunks.get(i);

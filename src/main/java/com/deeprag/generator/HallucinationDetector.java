@@ -75,7 +75,7 @@ public class HallucinationDetector {
                     .reduce((a, b) -> a + "\n---\n" + b)
                     .orElse("");
 
-            // 逐条验证每个 claim 是否被上下文支撑
+            // 第三步：逐条验证每个 claim 是否被上下文支撑
             int unsupported = 0;
             List<String> unsupportedClaims = new ArrayList<>();
             for (String claim : claims) {
@@ -86,7 +86,7 @@ public class HallucinationDetector {
                 }
             }
 
-            // 计算幻觉率：无支撑 claims 占总 claims 的比例
+            // 幻觉率=无支撑claims数量 / 总claims数量，0 表示全部有支撑，1 表示全部无支撑claims
             double rate = (double) unsupported / claims.size();
             ConsoleLog.step(String.format("幻觉检测: %d 条陈述, %d 条无支撑, 幻觉率=%.2f",
                     claims.size(), unsupported, rate));

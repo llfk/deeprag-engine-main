@@ -54,6 +54,7 @@ public class HybridRetriever implements Retriever {
         // 计算实际使用的权重（支持动态调整）
         double actualDenseWeight = denseWeight;
         double actualSparseWeight = sparseWeight;
+        // 若启用动态权重，根据查询长度调整稠密/稀疏权重
         if (dynamicWeight) {
             double[] weights = computeDynamicWeights(queryText);
             actualDenseWeight = weights[0];
@@ -86,7 +87,7 @@ public class HybridRetriever implements Retriever {
     /**
      * 基于关键词匹配计算稀疏分数
      * <p>
-     * 将查询文本拆分为关键词，对每个候选结果的内容统计匹配关键词数，
+     * Sparse 路径是一个简化实现:对查询做关键词提取，对Dense检索的候选结果计算关键词匹配度，
      * 归一化后作为稀疏分数。匹配时忽略大小写。
      */
     private List<ScoredCandidate> computeSparseScores(String queryText, List<SearchResult> candidates) {
@@ -100,16 +101,20 @@ public class HybridRetriever implements Retriever {
 
         ConsoleLog.dim("关键词列表: " + keywords);
 
+        // 对每个候选结果计算匹配关键词数，并归一化为稀疏分数
         List<ScoredCandidate> scored = new ArrayList<>();
         for (SearchResult candidate : candidates) {
             String contentLower = candidate.getContent().toLowerCase();
+            
+            // 统计匹配关键词数
             int matchCount = 0;
             for (String keyword : keywords) {
                 if (contentLower.contains(keyword)) {
                     matchCount++;
                 }
             }
-            // 归一化：匹配数 / 关键词总数，避免除零
+
+            // 计算分数 = 匹配数 / 关键词总数，避免除零
             float sparseScore = keywords.isEmpty() ? 0.0f : (float) matchCount / keywords.size();
             scored.add(new ScoredCandidate(candidate.getChunkId(), sparseScore));
         }
@@ -143,6 +148,7 @@ public class HybridRetriever implements Retriever {
         }
 
         // 收集所有候选 chunkId
+        // 注意：这里只用稠密结果的 chunkId，因为稀疏结果是基于稠密结果算的，不会引入新的 chunkId。
         Set<String> allChunkIds = new LinkedHashSet<>();
         denseResults.forEach(r -> allChunkIds.add(r.getChunkId()));
 
@@ -158,12 +164,14 @@ public class HybridRetriever implements Retriever {
             double rrfScore = 0.0;
 
             // 稠密路径贡献
+            // 计算稠密路径贡献：稠密权重 × 1/(K + 排名)，累加到总分
             Integer denseRank = denseRankMap.get(chunkId);
             if (denseRank != null) {
                 rrfScore += denseWeight * (1.0 / (rrfK + denseRank));
             }
 
             // 稀疏路径贡献
+            // 计算稀疏路径贡献：稀疏权重 × 1/(K + 排名)，累加到总分
             Integer sparseRank = sparseRankMap.get(chunkId);
             if (sparseRank != null) {
                 rrfScore += sparseWeight * (1.0 / (rrfK + sparseRank));
@@ -179,7 +187,7 @@ public class HybridRetriever implements Retriever {
             ));
         }
 
-        // 按融合分数降序排列，截断到 topK
+        // 按融合分数降序排列，如果融合结果超过了 topK 个，只保留前 topK 个
         fusedResults.sort((a, b) -> Float.compare(b.getScore(), a.getScore()));
         if (fusedResults.size() > topK) {
             fusedResults = fusedResults.subList(0, topK);

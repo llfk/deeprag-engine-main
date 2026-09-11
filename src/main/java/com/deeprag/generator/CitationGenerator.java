@@ -49,6 +49,7 @@ public class CitationGenerator implements Generator {
         List<SearchResult> chunks = retrievalResult.getResults();
         if (chunks == null) chunks = new ArrayList<>();
 
+        // 将检索结果组装为带编号的上下文文本，编号用于 LLM 在回答中引用
         String numberedContext = buildNumberedContext(chunks);
         String prompt = String.format(CITATION_PROMPT, numberedContext, query);
 
@@ -60,6 +61,7 @@ public class CitationGenerator implements Generator {
             answer = "抱歉，生成回答时出现错误。";
         }
 
+        // 从 LLM 回答中提取引用标注（如 [1]、[2]）对应的 chunkId
         List<String> citedChunks = extractCitations(answer, chunks);
 
         ConsoleLog.step("引用标注完成 (引用了 " + citedChunks.size() + " 个片段)");

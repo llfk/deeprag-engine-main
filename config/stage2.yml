@@ -54,7 +54,7 @@ queryEngine:
 # 重排
 reranker:
   enabled: true
-  strategy: "llm"
+  strategy: "llm"                   # LLm= LLM Reranker(本地默认);bge =生产环境 BGE 服务
   baseUrl: "http://localhost:11434"
   model: "gpt-oss:20b:cloud"
   timeout: 240

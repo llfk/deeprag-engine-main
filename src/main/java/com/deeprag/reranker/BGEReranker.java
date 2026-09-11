@@ -60,6 +60,7 @@ public class BGEReranker implements Reranker {
             requestBody.put("query", query);
             requestBody.put("documents", documents);
 
+            // 将请求体序列化为 JSON
             String bodyJson = mapper.writeValueAsString(requestBody);
 
             // 调用 Ollama reranker API
@@ -76,6 +77,7 @@ public class BGEReranker implements Reranker {
                 }
 
                 String respBody = response.body().string();
+                // 从响应中读取 JSON 字符串，调用 parseRerankResponse 方法解析并返回重排序结果
                 return parseRerankResponse(respBody, candidates, topK);
             }
 
@@ -102,6 +104,7 @@ public class BGEReranker implements Reranker {
                                                    List<SearchResult> candidates,
                                                    int topK) {
         try {
+            // 用 Jackson 把 JSON 字符串解析成树形结构 JsonNode
             JsonNode root = mapper.readTree(respBody);
             JsonNode resultsNode = root.get("results");
 
@@ -112,10 +115,12 @@ public class BGEReranker implements Reranker {
 
             List<SearchResult> rerankedResults = new ArrayList<>();
             for (JsonNode resultNode : resultsNode) {
+                // 从当前结果节点获取 index 字段，转为整数。这个 index 是原始候选列表中的位置（0-based）
                 int index = resultNode.get("index").asInt();
                 float score = (float) resultNode.get("relevance_score").asDouble();
 
                 if (index >= 0 && index < candidates.size()) {
+                    //根据索引从原始候选列表中获取对应的 SearchResult 对象
                     SearchResult original = candidates.get(index);
                     // 用重排序分数替换原始分数
                     rerankedResults.add(new SearchResult(

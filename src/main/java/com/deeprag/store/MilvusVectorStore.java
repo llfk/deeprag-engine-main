@@ -109,7 +109,7 @@ public class MilvusVectorStore implements VectorStore {
                 IndexParam.builder()
                         .fieldName("embedding")
                         .indexType(IndexParam.IndexType.AUTOINDEX)
-                        .metricType(IndexParam.MetricType.COSINE)
+                        .metricType(IndexParam.MetricType.COSINE)    // 使用余弦相似度计算，返回分数
                         .build()
         );
 

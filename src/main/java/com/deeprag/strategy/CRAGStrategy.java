@@ -115,6 +115,9 @@ public class CRAGStrategy implements RAGStrategy {
                 .orElse(0.0);
 
         // 维度 3: 分数断层检测——当相邻结果分数差 > 0.2 时，认为后面的结果不相关
+        // 例子：最大相邻差值 = max(0.85-0.72, 0.72-0.68, 0.68-0.45, 0.45-0.31) = 0.23
+        // 断层位置=第3-4之间(0.68>0.45)
+        // effectiveChunks= 断层位置之前的 chunks 数量=3
         int effectiveChunks = results.size();
         for (int i = 1; i < results.size(); i++) {
             double gap = results.get(i - 1).getScore() - results.get(i).getScore();
@@ -140,6 +143,8 @@ public class CRAGStrategy implements RAGStrategy {
             try {
                 var processed = queryEngine.process(query);
                 if (processed.getRewritten() != null) {
+                    // 如果改写成功，使用改写后的 query 进行补充检索
+                    ConsoleLog.step("改写 query 成功: " + processed.getRewritten());
                     rewrittenQuery = processed.getRewritten();
                 }
             } catch (Exception e) {

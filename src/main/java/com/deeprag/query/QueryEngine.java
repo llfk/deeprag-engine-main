@@ -11,11 +11,11 @@ import dev.langchain4j.model.chat.ChatLanguageModel;
  */
 public class QueryEngine {
 
-    private final IntentClassifier intentClassifier;
-    private final QueryRewriter queryRewriter;
-    private final HyDEGenerator hydeGenerator;
-    private final MultiQueryGenerator multiQueryGenerator;
-    private final QueryDecomposer queryDecomposer;
+    private final IntentClassifier intentClassifier;        // 意图分类器
+    private final QueryRewriter queryRewriter;              // 查询改写器
+    private final HyDEGenerator hydeGenerator;              // HyDE 假设性文档生成器
+    private final MultiQueryGenerator multiQueryGenerator;  // 多查询变体生成器，基于原始查询生成多个相近的查询表述
+    private final QueryDecomposer queryDecomposer;          // 查询分解器，将复杂的查询拆解为多个更简单的子问题
 
     private final boolean enableRewrite;
     private final boolean enableHyDE;

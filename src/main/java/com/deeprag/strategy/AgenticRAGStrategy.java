@@ -89,15 +89,20 @@ public class AgenticRAGStrategy implements RAGStrategy {
                     return generateAnswer(query, allChunks);
                 }
                 case RETRIEVE -> {
+                    // 如果 Agent 提供了新的检索 query，则使用它进行检索
                     String retrieveQuery = decision.newQuery();
+                    // 如果 Agent 没有提供新的 query，则尝试改写原始 query
                     if (retrieveQuery == null || retrieveQuery.isBlank()) {
                         ConsoleLog.warn("Agent 返回空 query，尝试改写");
                         retrieveQuery = tryRewrite(query);
                     }
+                    // 如果查询词不为空且没有被使用过，执行检索
                     if (retrieveQuery != null
                             && !usedQueries.contains(retrieveQuery.toLowerCase().trim())) {
                         usedQueries.add(retrieveQuery.toLowerCase().trim());
+                        // 跨集合检索所有集合，合并去重
                         List<SearchResult> newChunks = retrieveAllCollections(retrieveQuery, collection);
+                        // 将新检索到的文本块加入累积上下文
                         addNewChunks(allChunks, newChunks);
                         ConsoleLog.step("检索到 " + newChunks.size() + " 个新文本块，累计 "
                                 + allChunks.size() + " 个");
@@ -106,9 +111,12 @@ public class AgenticRAGStrategy implements RAGStrategy {
                     }
                 }
                 case REWRITE_AND_RETRIEVE -> {
+                    // 尝试改写原始 query
                     String rewritten = tryRewrite(query);
+                    // 如果改写成功且没有被使用过，执行检索
                     if (rewritten != null && !usedQueries.contains(rewritten.toLowerCase().trim())) {
                         usedQueries.add(rewritten.toLowerCase().trim());
+                        // 跨集合检索所有集合，合并去重
                         List<SearchResult> newChunks = retrieveAllCollections(rewritten, collection);
                         addNewChunks(allChunks, newChunks);
                         ConsoleLog.step("改写后检索到 " + newChunks.size() + " 个新文本块");
@@ -171,6 +179,7 @@ public class AgenticRAGStrategy implements RAGStrategy {
             json = response.substring(start, end + 1);
         }
 
+        // 解析 JSON，提取 action 和 new_query
         String actionStr = extractJsonValue(json, "action");
         String newQuery = extractJsonValue(json, "new_query");
 
@@ -249,9 +258,11 @@ public class AgenticRAGStrategy implements RAGStrategy {
         List<SearchResult> allResults = new ArrayList<>();
         Set<String> seen = new HashSet<>();
         for (String col : cols) {
+            // 过滤集合前缀
             String shortName = (collectionPrefix != null && col.startsWith(collectionPrefix))
                     ? col.substring(collectionPrefix.length()) : col;
             try {
+                // 跨集合检索，按内容去重
                 for (SearchResult s : hybridRetriever.retrieve(query, shortName).getResults()) {
                     String key = s.getContent().trim();
                     if (!seen.contains(key)) {

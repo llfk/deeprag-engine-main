@@ -29,8 +29,10 @@ public class MarkdownParser {
             // 提取所有一级标题作为章节列表
             List<String> sections = new ArrayList<>();
             for (String line : content.split("\n")) {
-                String trimmed = line.trim();
+                // 去除行首尾空白，检查是否为一级标题
+                String trimmed = line.trim();   
                 if (trimmed.startsWith("# ")) {
+                    // 提取标题文本，去掉 "# " 前缀
                     sections.add(trimmed.substring(2).trim());
                 }
             }
