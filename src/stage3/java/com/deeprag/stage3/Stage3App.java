@@ -21,6 +21,8 @@ import com.deeprag.strategy.*;
 import dev.langchain4j.model.chat.ChatLanguageModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 
+import java.nio.file.Path;
+
 import java.time.Duration;
 import java.util.*;
 
@@ -38,7 +40,7 @@ public class Stage3App {
     private static final String HELP_TEXT = """
 
             可用命令:
-              index <path>                  索引文档
+              index <path|dir>              索引文档或目录
               query <text>                  使用当前策略查询
               query naive|advanced|self_rag|crag|adaptive <text>
                                             使用指定策略查询
@@ -167,7 +169,12 @@ public class Stage3App {
             try {
                 switch (command) {
                     case "index" -> {
-                        if (parts.length < 2) { ConsoleLog.warn("用法: index <路径>"); break; }
+                        if (parts.length < 2) { ConsoleLog.warn("用法: index <文件路径|目录路径>"); break; }
+                        // 目录：批量索引，单个文档失败只跳过该文档
+                        if (Path.of(parts[1]).toFile().isDirectory()) {
+                            pipeline.indexPath(parts[1]);
+                            break;
+                        }
                         pipeline.indexDocument(parts[1]);
                         lastCollection = pipeline.toCollectionName(parts[1]);
                         ConsoleLog.info("集合: " + lastCollection);

@@ -43,7 +43,7 @@ public class Stage2App {
     private static final String HELP_TEXT = """
 
             可用命令:
-              index <path>         索引文档到向量数据库
+              index <path|dir>     索引文档或目录到向量数据库
               query <text>         执行 RAG 查询
               query naive <text>   使用 Stage 1 朴素策略查询
               query adv <text>     使用 Stage 2 高级策略查询
@@ -209,12 +209,18 @@ public class Stage2App {
                 switch (command) {
                     case "index" -> {
                         if (parts.length < 2) {
-                            ConsoleLog.warn("用法: index <文件路径>");
+                            ConsoleLog.warn("用法: index <文件路径|目录路径>");
                             break;
                         }
                         String filePath = parts[1];
                         if (!Path.of(filePath).toFile().exists()) {
-                            ConsoleLog.error("文件不存在: " + filePath);
+                            ConsoleLog.error("路径不存在: " + filePath);
+                            break;
+                        }
+                        // 目录：批量索引，单个文档失败只跳过该文档
+                        if (Path.of(filePath).toFile().isDirectory()) {
+                            pipeline.indexPath(filePath);
+                            ConsoleLog.dim("批量索引结束，可用 collections 查看集合，用 use <集合名> 切换");
                             break;
                         }
                         pipeline.indexDocument(filePath);

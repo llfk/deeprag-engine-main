@@ -13,6 +13,8 @@ import com.deeprag.retriever.RetrievalResult;
 import com.deeprag.store.ChunkEmbedding;
 import com.deeprag.store.VectorStore;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -95,6 +97,104 @@ public class RAGPipeline {
         ConsoleLog.step("写入向量数据库...");
         vectorStore.upsert(collectionName, chunkEmbeddings);
         ConsoleLog.info("文档索引完成: " + filePath + " -> " + collectionName);
+    }
+
+    /**
+     * 索引入口（文件或目录）
+     * <p>
+     * 目标是目录时，展开为该目录下所有受支持的文档后逐个索引；
+     * 每个文档独立处理，单个文档失败只计入结果，不会中断其余文档。
+     *
+     * @param path 文档路径或目录路径
+     * @return 索引结果汇总
+     */
+    public IndexReport indexPath(String path) {
+        Path target = Path.of(path);
+        if (!target.toFile().exists()) {
+            ConsoleLog.error("路径不存在: " + path);
+            return new IndexReport(List.of(), List.of(path + " -> 路径不存在"));
+        }
+
+        List<String> documents = resolveDocuments(path);
+        if (documents.isEmpty()) {
+            ConsoleLog.warn("目录下没有受支持的文档（支持 .md / .markdown / .pdf）: " + path);
+            return new IndexReport(List.of(), List.of());
+        }
+        return indexDocuments(documents);
+    }
+
+    /**
+     * 收集待索引的文档路径
+     *
+     * @param path 文件或目录路径
+     * @return 文件自身，或目录下所有受支持文档的路径（按名称排序，不递归子目录）
+     */
+    public List<String> resolveDocuments(String path) {
+        Path target = Path.of(path);
+        if (!Files.isDirectory(target)) {
+            return List.of(path);
+        }
+        try (var entries = Files.list(target)) {
+            return entries
+                    .filter(Files::isRegularFile)
+                    .filter(p -> parserRouter.supports(p.toString()))
+                    .map(Path::toString)
+                    .sorted()
+                    .toList();
+        } catch (IOException e) {
+            throw new RuntimeException("读取目录失败: " + path, e);
+        }
+    }
+
+    /**
+     * 批量索引文档，并对每个文档做失败隔离
+     * <p>
+     * 单个文档在解析、分块、向量化或写入的任一环节失败时，只记录失败原因并继续处理
+     * 后续文档，避免一个坏文件导致整批入库中断。
+     *
+     * @param filePaths 文档路径列表
+     * @return 索引结果汇总
+     */
+    public IndexReport indexDocuments(List<String> filePaths) {
+        List<String> succeeded = new ArrayList<>();
+        List<String> failures = new ArrayList<>();
+
+        ConsoleLog.header("开始批量索引 " + filePaths.size() + " 个文档");
+        for (int i = 0; i < filePaths.size(); i++) {
+            String filePath = filePaths.get(i);
+            ConsoleLog.step("[" + (i + 1) + "/" + filePaths.size() + "] " + filePath);
+            try {
+                indexDocument(filePath);
+                succeeded.add(filePath);
+            } catch (Exception e) {
+                // 文件级隔离：记录失败原因后继续处理下一个文档
+                String reason = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+                failures.add(filePath + " -> " + reason);
+                ConsoleLog.error("索引失败，已跳过: " + filePath + " (" + reason + ")");
+            }
+        }
+
+        ConsoleLog.step("批量索引完成: 成功 " + succeeded.size() + " 个，失败 " + failures.size() + " 个");
+        for (String failure : failures) {
+            ConsoleLog.dim("  未入库: " + failure);
+        }
+        return new IndexReport(succeeded, failures);
+    }
+
+    /**
+     * 批量索引结果汇总
+     *
+     * @param succeeded 成功索引的文档路径
+     * @param failures  失败的文档及原因（格式：路径 -&gt; 原因）
+     */
+    public record IndexReport(List<String> succeeded, List<String> failures) {
+        public int successCount() {
+            return succeeded.size();
+        }
+
+        public int failureCount() {
+            return failures.size();
+        }
     }
 
     /**
