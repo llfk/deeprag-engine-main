@@ -24,6 +24,7 @@ public class SimpleGenerator implements Generator {
             2. 如果上下文中没有相关信息，请明确告知用户
             3. 回答要简洁准确，条理清晰
             4. 适当引用上下文中的关键信息
+            5. 不要提及文档名称、章节名称等资料出处信息，如需标注来源请使用 [编号]
             """;
 
     private final OpenAiChatModel chatModel;
@@ -56,8 +57,8 @@ public class SimpleGenerator implements Generator {
             contextBuilder.append("【未检索到相关上下文】\n");
         }
 
-        // 构建完整 Prompt
-        String userPrompt = contextBuilder + "\n【用户问题】\n" + query;
+        // 构建完整 Prompt：SYSTEM_PROMPT 提供行为约束，检索上下文与用户问题随后
+        String userPrompt = SYSTEM_PROMPT + "\n" + contextBuilder + "\n【用户问题】\n" + query;
 
         // 调用 LLM 生成回答
         String answer;
