@@ -71,6 +71,11 @@ public class RAGPipeline {
         List<Chunk> chunks = chunker.chunk(parseResult);
         ConsoleLog.step("分块完成 (数量=" + chunks.size() + ")");
 
+        // 兜底：内容为空或全为空白时不会产生任何分块，若继续向下走只会在取第 0 个向量时报出无关的越界错误
+        if (chunks.isEmpty()) {
+            throw new IllegalStateException("文档未产生任何分块（解析内容为空或全为空白），无法索引: " + filePath);
+        }
+
         // 第三步：批量向量化
         ConsoleLog.step("开始批量向量化...");
         List<String> texts = chunks.stream().map(Chunk::getContent).toList();
