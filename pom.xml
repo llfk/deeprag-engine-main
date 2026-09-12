@@ -20,6 +20,7 @@
         <langchain4j.version>0.36.2</langchain4j.version>
         <milvus.version>2.5.8</milvus.version>
         <pdfbox.version>3.0.4</pdfbox.version>
+        <rapidocr.version>1.0.3</rapidocr.version>
         <jackson.version>2.16.1</jackson.version>
         <snakeyaml.version>2.2</snakeyaml.version>
         <lombok.version>1.18.34</lombok.version>
@@ -52,6 +53,16 @@
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
             <version>${pdfbox.version}</version>
+        </dependency>
+
+        <!--
+            扫描件 OCR：RapidOCR 的 Java 移植版（ONNXRuntime + OpenCV），模型已随 jar 打包。
+            注意它会把 ONNXRuntime(约 89MB) 与 OpenCV(约 104MB) 的原生库带进来
+        -->
+        <dependency>
+            <groupId>io.github.hzkitty</groupId>
+            <artifactId>rapidocr4j</artifactId>
+            <version>${rapidocr.version}</version>
         </dependency>
 
         <!-- YAML 配置 -->
