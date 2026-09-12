@@ -179,6 +179,11 @@ public class PdfLayoutStripper extends PDFTextStripper {
     /**
      * 把片段拼回视觉行：按 y 聚成行（y 差在 LINE_Y_TOLERANCE 内视为同一行），行内按 x 从左到右排。
      * PDFBox 在文本间隙处会把一行拆成多次回调，所以「一行」必须在这里重新组装出来。
+     * <p>
+     * 行内排序必须单独再做一次：上面的全局排序以 y 为第一关键字，而同一行内不同字体、不同字号的
+     * 片段基线并不在同一 y 上（中英文混排常见差 0.1pt 左右），靠 y 优先的顺序会把它们的前后关系打乱。
+     * 实测页码「第 1 页 共 60 页」正是被拼成了「1页 60页 第 共」——「第」「共」用宋体、
+     * 「1页」「60页」用 TimesNewRoman，两组 y 差 0.1pt，于是后半截整体排到了前面。
      */
     private List<List<Fragment>> groupVisualLines() {
         List<Fragment> sorted = new ArrayList<>(fragments);
@@ -193,6 +198,9 @@ public class PdfLayoutStripper extends PDFTextStripper {
                 line.add(fragment);
                 lines.add(line);
             }
+        }
+        for (List<Fragment> line : lines) {
+            line.sort(Comparator.comparingDouble(Fragment::x));
         }
         return lines;
     }
@@ -300,11 +308,18 @@ public class PdfLayoutStripper extends PDFTextStripper {
         return dir > ROTATION_TOLERANCE && dir < 360f - ROTATION_TOLERANCE;
     }
 
-    /** 数字归一化：让「第 3 页 共 60 页」与「第 4 页 共 60 页」归为同一个 key */
+    /**
+     * 归一化：数字换成 {@code #}、去掉所有空白，使同一模板行在不同页上归为同一个 key
+     * <p>
+     * 空白必须直接去掉，不能压成单个空格。页脚「第 N 页 共 60 页」的片段切分随页码位数变化：
+     * 一位数页码时「共」独立成片段，拼成「第 1页 共 60页」；两位数时「共」黏在前一个片段上，
+     * 拼成「第 10页共 60页」。压成空格后两者仍是「第 #页 共 #页」和「第 #页共 #页」两个 key，
+     * 前者只覆盖 10/69 页、够不到 {@code HEADER_FOOTER_COVER} 的 60% 门槛，这 10 页页码就漏网留在了正文里。
+     */
     private static String normalize(String text) {
         return text.trim().toLowerCase(Locale.ROOT)
                 .replaceAll("\\d+", "#")
-                .replaceAll("\\s+", " ");
+                .replaceAll("\\s+", "");
     }
 
     /** 取中位数；不用平均值是为了避免被少量大字（水印）拉高基准 */
