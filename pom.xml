@@ -21,6 +21,7 @@
         <milvus.version>2.5.8</milvus.version>
         <pdfbox.version>3.0.4</pdfbox.version>
         <rapidocr.version>1.0.3</rapidocr.version>
+        <poi.version>5.2.5</poi.version>
         <jackson.version>2.16.1</jackson.version>
         <snakeyaml.version>2.2</snakeyaml.version>
         <lombok.version>1.18.34</lombok.version>
@@ -63,6 +64,16 @@
             <groupId>io.github.hzkitty</groupId>
             <artifactId>rapidocr4j</artifactId>
             <version>${rapidocr.version}</version>
+        </dependency>
+
+        <!--
+            Word（.docx）解析：标题层级写在段落样式里，读样式名即可，不需要 PDF 那套版式反推。
+            只支持 OOXML 的 .docx；97-2003 的 .doc 是二进制格式，HWPF 对样式支持有限，故不支持。
+        -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>${poi.version}</version>
         </dependency>
 
         <!-- YAML 配置 -->
